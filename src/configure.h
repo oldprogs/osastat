@@ -19,6 +19,7 @@ extern unsigned char		sort_order[10000];
 extern unsigned short int	lines_num;
 extern unsigned char		month[12][16];
 extern unsigned char		date_get[32];
+extern unsigned char		date_get_len;
 extern int tm_mday;
 extern int tm_mon;
 

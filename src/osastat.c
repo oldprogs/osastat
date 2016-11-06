@@ -39,10 +39,13 @@ int main(int argc, char **argv)
 	    process_binary(configuration_key[ckl].conf_name,configuration_key[ckl].conf_file);
 	}
 	if (!strcmp(configuration_key[ckl].conf_type,log_types[2])){
-	    process_qico(configuration_key[ckl].conf_name,configuration_key[ckl].conf_file);
+	    process_qico(configuration_key[ckl].conf_name,configuration_key[ckl].conf_file,0);
 	}
 	if (!strcmp(configuration_key[ckl].conf_type,log_types[3])){
 	    process_ifcico(configuration_key[ckl].conf_name,configuration_key[ckl].conf_file);
+	}
+	if (!strcmp(configuration_key[ckl].conf_type,log_types[4])){
+	    process_qico(configuration_key[ckl].conf_name,configuration_key[ckl].conf_file,1);
 	}
     }
 //    exit(0);

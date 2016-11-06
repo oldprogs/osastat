@@ -2,7 +2,7 @@
 
 void about(){
     printf(" €€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€\n");
-    printf("  osastat 1.0beta-2 (c) Oleg Smirnov, 2:5022/128\n");
+    printf("  osastat 1.0beta-4 (c) Oleg Smirnov, 2:5022/128\n");
     printf("  (skin borrowed from T-Hist)\n");
     printf("\n");
 }

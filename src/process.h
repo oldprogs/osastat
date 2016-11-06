@@ -43,6 +43,7 @@ struct line_load_struct{
 
 unsigned char	month[12][16];
 unsigned char	date_get[32];
+unsigned char	date_get_len;
 unsigned char	*tpl_start="†€‰€Š€‰€Š€‰€Š€‰€Š€‰€Š€‰€Š€‰€Š€‰€Š€‰€Š€‰€Š€‰€Š€‰€‡";
 unsigned char	*tpl_draw ="                                    ";
 unsigned char	*tpl_split="†€€€Š€€€Š€€€Š€€€Š€€€Š€€€Š€€€Š€€€Š€€€Š€€€Š€€€Š€€€‡";
@@ -51,7 +52,7 @@ unsigned char	*tpl_numb ="0   2   4   6   8  10  12  14  16  18  20  22  24";
 unsigned char	otstup_num=15;
 
 int process_bforce(char *desc, char *file);
-int process_qico(char *desc, char *file);
+int process_qico(char *desc, char *file, char type);
 int process_ifcico(char *desc, char *file);
 int process_binary(char *desc, char *file);
 int statistics_filter(unsigned char *desc, unsigned char *name_line, unsigned short int zone, unsigned short int net, unsigned short int node, unsigned short int point, unsigned char typ, unsigned long int timebeg, unsigned long int timelen, unsigned long int bytesrcv, unsigned long int bytessnt);

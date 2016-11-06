@@ -85,5 +85,6 @@ void date_get_conf(char *param){
 	}
 	sprintf(date_get, "%s%c", date_get, param[ckl]);
     }
-//    printf("%s\n", date_get);
+    date_get_len=strlen(date_get);
+//    printf("||%s||\n", date_get);
 }

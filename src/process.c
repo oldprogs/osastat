@@ -68,7 +68,7 @@ int process_bforce(char *desc, char *file){
     fclose(file_log);
 }
 
-int process_qico(char *desc, char *file){
+int process_qico(char *desc, char *file, char type){
     FILE *file_log;
     char buff[1024], ckl;
     unsigned short int      zone, net, node, point, len;
@@ -93,15 +93,21 @@ int process_qico(char *desc, char *file){
 	}
 	strcpy(pole[pn], buff);
 	pn++;
-	if (split_ftn_addr(pole[2], &zone, &net, &node, &point)==-1) continue;
+	if (type==0){
+	    if (split_ftn_addr(pole[3], &zone, &net, &node, &point)==-1) continue;
+	    if (strstr(pole[2],"O")){typ=*"O";}else{typ=*"I";}
+	    if (strstr(pole[2],"I")){typ=*"I";}else{typ=*"O";}
+	}else{
+	    if (split_ftn_addr(pole[2], &zone, &net, &node, &point)==-1) continue;
+	    if (strstr(pole[3],"O")){typ=*"O";}else{typ=*"I";}
+	    if (strstr(pole[3],"I")){typ=*"I";}else{typ=*"O";}
+	}
 
 	bytesrcv=atoi(pole[0]);
 	bytessnt=atoi(pole[1]);
 	timelen=atoi(pole[4]);
 	timebeg=atoi(pole[5]);
 	strcpy(name_line, pole[6]);
-	if (strstr(pole[3],"O")){typ=*"O";}else{typ=*"I";}
-	if (strstr(pole[3],"I")){typ=*"I";}else{typ=*"O";}
 
 	statistics_filter(desc, name_line, zone, net, node, point, typ, timebeg, timelen, bytesrcv, bytessnt);
     }
@@ -111,24 +117,21 @@ int process_qico(char *desc, char *file){
 int process_ifcico(char *desc, char *file){
     FILE *file_log;
     char buff[1024], mnth[255], ckl, tmp_buff[1024], tmp_len;
-    char *string_pat[4]={	".*:.*:.*ifcico.*:.*start.*bound.*session",
-				".*:.*:.*ifcico.*:.*sent.*bytes in.*seconds",
-				".*:.*:.*ifcico.*:.*received.*bytes in.*seconds",
-				".*:.*:.*ifcico.*:.*call to.*successful" };
-    regex_t f_conf_string_pattern[4];
+    char *string_pat[6]={	".*:.*:.*if.*:.*start.*bound.*session",
+				".*:.*:.*if.*:.*remote  address:",
+				".*:.*:.*if.*:.*sent.*bytes in.*seconds",
+				".*:.*:.*if.*:.*received.*bytes in.*seconds",
+				".*:.*:.*if.*:.* of .* calls, ",
+				".*:.*:.*if.*:.*call to.*successful" };
+    regex_t f_conf_string_pattern[5];
     regmatch_t result[1024];
     unsigned short int	zone, net, node, point, len;
     unsigned long int	timebeg, timelen, bytesrcv=0, bytessnt=0;
     unsigned long long	curr_pos, curr_sess;
     unsigned char typ;//, pn=0, pole[7][80], *pnt, force[4], name_line[80];
 
-    if (regcomp(&f_conf_string_pattern[0], mnth, 0)){
-	printf("regexp error!\n");
-	return 2;
-    }
-    for (ckl=0; ckl<4; ckl++){
-	sprintf(mnth, "^%s %s", date_get, string_pat[ckl]);
-	if (regcomp(&f_conf_string_pattern[ckl], mnth, 0)){
+    for (ckl=0; ckl<6; ckl++){
+	if (regcomp(&f_conf_string_pattern[ckl], string_pat[ckl], 0)){
 	    printf("regexp error!\n");
 	    return 2;
 	}
@@ -141,60 +144,76 @@ int process_ifcico(char *desc, char *file){
     while(!feof(file_log)){
 	bzero(buff, sizeof(buff));
 	fgets(buff, sizeof(buff), file_log);
-	if(!regexec(&f_conf_string_pattern[0], buff, 20, result, 0)){
-//	    printf("(%d)(%d)%s", get_sess_text_num(buff), get_sess_text_time(buff), buff);
-    	    if (strstr(buff," outbound ")){typ=*"O";}else{typ=*"I";}
-	    if (strstr(buff," inbound ")) {typ=*"I";}else{typ=*"O";}
-	    curr_sess=get_sess_text_num(buff);
-	    timebeg=get_sess_text_time(buff);
-	    curr_pos=ftell(file_log);
-	    while(!feof(file_log)){
-		bzero(buff, sizeof(buff));
-		fgets(buff, sizeof(buff), file_log);
-		if((!regexec(&f_conf_string_pattern[1], buff, 20, result, 0))&&(curr_sess==get_sess_text_num(buff))){
-		    strcpy(tmp_buff, buff);
-		    *strstr(tmp_buff, " bytes in ")=0;
-		    tmp_len=strlen(tmp_buff)-1;
-		    for (ckl=tmp_len; ckl>0; ckl--){
-			if (tmp_buff[ckl]==*" "){
-			    bytessnt+=atoi(&tmp_buff[ckl+1]);
-			    break;
+//	buff[strlen(date_get)]=0;
+//	printf("-(%s)-%s-%d\n", date_get, buff, memcmp(buff, date_get, date_get_len));
+	if(!memcmp(date_get, buff, strlen(date_get))){
+//	    printf("%s", buff);
+	    if(!regexec(&f_conf_string_pattern[0], buff, 20, result, 0)){
+//		printf("%s", buff);
+    	        if (strstr(buff," outbound ")){typ=*"O";}else{typ=*"I";}
+		if (strstr(buff," inbound ")) {typ=*"I";}else{typ=*"O";}
+		curr_sess=get_sess_text_num(buff);
+		timebeg=get_sess_text_time(buff);
+	    	curr_pos=ftell(file_log);
+		net=0;
+		bytessnt=0;
+		bytesrcv=0;
+		while(!feof(file_log)){
+		    bzero(buff, sizeof(buff));
+		    fgets(buff, sizeof(buff), file_log);
+		    if((!regexec(&f_conf_string_pattern[1], buff, 20, result, 0))&&(curr_sess==get_sess_text_num(buff))&&(net==0)){
+			*(strstr(buff, "@")+1)=0;
+			*strstr(buff, "@")=*"\n";
+			split_ftn_addr(strstr(buff, "remote  address:")+17, &zone, &net, &node, &point);
+//		 	printf("(%d:%d/%d.%d)" , zone, net, node, point);
+			continue;
+		    }
+		    if((!regexec(&f_conf_string_pattern[2], buff, 20, result, 0))&&(curr_sess==get_sess_text_num(buff))){
+			strcpy(tmp_buff, buff);
+			*strstr(tmp_buff, " bytes in ")=0;
+			tmp_len=strlen(tmp_buff)-1;
+			for (ckl=tmp_len; ckl>0; ckl--){
+			    if (tmp_buff[ckl]==*" "){
+				bytessnt+=atoi(&tmp_buff[ckl+1]);
+				break;
+			    }
 			}
+//		    	printf("(%d)%s", bytessnt, buff);
+			continue;
 		    }
-//		    printf("(%d)%s", bytessnt, buff);
-		}
-		if((!regexec(&f_conf_string_pattern[2], buff, 20, result, 0))&&(curr_sess==get_sess_text_num(buff))){
-		    strcpy(tmp_buff, buff);
-		    *strstr(tmp_buff, " bytes in ")=0;
-		    tmp_len=strlen(tmp_buff)-1;
-		    for (ckl=tmp_len; ckl>0; ckl--){
-			if (tmp_buff[ckl]==*" "){
-			    bytesrcv+=atoi(&tmp_buff[ckl+1]);
-			    break;
+		    if((!regexec(&f_conf_string_pattern[3], buff, 20, result, 0))&&(curr_sess==get_sess_text_num(buff))){
+			strcpy(tmp_buff, buff);
+			*strstr(tmp_buff, " bytes in ")=0;
+			tmp_len=strlen(tmp_buff)-1;
+			for (ckl=tmp_len; ckl>0; ckl--){
+			    if (tmp_buff[ckl]==*" "){
+				bytesrcv+=atoi(&tmp_buff[ckl+1]);
+				break;
+			    }
 			}
+//		    	printf("(%d)%s", bytesrcv, buff);
+			continue;
 		    }
-//		    printf("(%d)%s", bytesrcv, buff);
-		}
-		if((!regexec(&f_conf_string_pattern[3], buff, 20, result, 0))&&(curr_sess==get_sess_text_num(buff))){
-		    timelen=get_sess_text_time(buff)-timebeg;
-		    strcpy(tmp_buff, buff);
-		    *strstr(tmp_buff, " successful ")=0;
-		    tmp_len=strlen(tmp_buff)-1;
-		    for (ckl=tmp_len; ckl>0; ckl--){
-			if (tmp_buff[ckl]==*" "){
-			    split_ftn_addr(&tmp_buff[ckl+1], &zone, &net, &node, &point);
-			    break;
+		    if(((!regexec(&f_conf_string_pattern[4], buff, 20, result, 0))||(!regexec(&f_conf_string_pattern[5], buff, 20, result, 0)))&&(curr_sess==get_sess_text_num(buff))){
+			timelen=get_sess_text_time(buff)-timebeg;
+//		 	printf("%s/ifcico|%d:%d/%d.%d - %c - (beg:%d/len:%d) - rx:%d/tx:%d\n" , desc, zone, net, node, point, typ ,timebeg ,timelen , bytesrcv, bytessnt);
+			if (net!=0){
+			    statistics_filter(desc, "ifcico", zone, net, node, point, typ, timebeg, timelen, bytesrcv, bytessnt);
 			}
+			break;
 		    }
-//		    printf("%s/ifcico|%d:%d/%d.%d - %c - (beg:%d/len:%d) - rx:%d/tx:%d\n" , desc, zone, net, node, point, typ ,timebeg ,timelen , bytesrcv, bytessnt);
-		    if (net!=0){
-			statistics_filter(desc, "ifcico", zone, net, node, point, typ, timebeg, timelen, bytesrcv, bytessnt);
-		    }
-		    bytessnt=0;bytesrcv=0;
-		    break;
+/*		    if((!regexec(&f_conf_string_pattern[3], buff, 20, result, 0))&&(curr_sess==get_sess_text_num(buff))){
+			timelen=get_sess_text_time(buff)-timebeg;
+//		 	printf("%s/ifcico|%d:%d/%d.%d - %c - (beg:%d/len:%d) - rx:%d/tx:%d\n" , desc, zone, net, node, point, typ ,timebeg ,timelen , bytesrcv, bytessnt);
+			if (net!=0){
+			    statistics_filter(desc, "ifcico", zone, net, node, point, typ, timebeg, timelen, bytesrcv, bytessnt);
+			}
+			bytessnt=0;bytesrcv=0;
+			break;
+		    }*/
 		}
+		fseek(file_log, curr_pos, SEEK_SET);
 	    }
-	    fseek(file_log, curr_pos, SEEK_SET);
 	}
 	
 /*	if(!regexec(&f_conf_string_pattern[1], buff, 20, result, 0)){
