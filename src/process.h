@@ -1,9 +1,9 @@
 #ifndef _PROCESS_H_
 #define _PROCESS_H_
 
-extern unsigned long int time_start;
-extern unsigned long int time_stop;
-extern unsigned long int day_sec;
+extern unsigned int time_start;
+extern unsigned int time_stop;
+extern unsigned int day_sec;
 extern int tm_mday;
 extern int tm_mon;
 
@@ -21,13 +21,13 @@ unsigned char sort_order_num=0;
 
 unsigned int stat_screen_acc=0;
 
-unsigned long int sess_in=0, sess_out=0;//, sess_all=0;
-unsigned long int bytes_recv=0, bytes_sent=0;//, bytes_all=0;
-unsigned long int time_in=0, time_out=0;//, time_all=0;
+unsigned int sess_in=0, sess_out=0;//, sess_all=0;
+unsigned int bytes_recv=0, bytes_sent=0;//, bytes_all=0;
+unsigned int time_in=0, time_out=0;//, time_all=0;
 
 struct stat_screen_base{
     unsigned short int	zone, net, node, point;
-    unsigned long int	bytesrcv, bytessnt;
+    unsigned int	bytesrcv, bytessnt;
     unsigned int	sess;
     unsigned char	field[97];
 }*stat_screen;
@@ -36,9 +36,9 @@ unsigned int line_load_acc=0;
 
 struct line_load_struct{
     unsigned char fullname[255], desc[255], name_line[255], field[97];
-    unsigned long int sess_in, sess_out;//, sess_all=0;
-    unsigned long int bytes_recv, bytes_sent;//, bytes_all=0;
-    unsigned long int time_in, time_out;//, time_all=0;
+    unsigned int sess_in, sess_out;//, sess_all=0;
+    unsigned int bytes_recv, bytes_sent;//, bytes_all=0;
+    unsigned int time_in, time_out;//, time_all=0;
 }*line_load;
 
 unsigned char	month[12][16];
@@ -55,9 +55,9 @@ int process_bforce(char *desc, char *file);
 int process_qico(char *desc, char *file, char type);
 int process_ifcico(char *desc, char *file);
 int process_binary(char *desc, char *file);
-int statistics_filter(unsigned char *desc, unsigned char *name_line, unsigned short int zone, unsigned short int net, unsigned short int node, unsigned short int point, unsigned char typ, unsigned long int timebeg, unsigned long int timelen, unsigned long int bytesrcv, unsigned long int bytessnt);
+int statistics_filter(unsigned char *desc, unsigned char *name_line, unsigned short int zone, unsigned short int net, unsigned short int node, unsigned short int point, unsigned char typ, unsigned int timebeg, unsigned int timelen, unsigned int bytesrcv, unsigned int bytessnt);
 int statistics_find_position(unsigned short int zone, unsigned short int net, unsigned short int node, unsigned short int point);
-int statistics_insert(unsigned char *desc, unsigned char *name_line, unsigned short int zone, unsigned short int net, unsigned short int node, unsigned short int point, unsigned char typ, unsigned long int timebeg, unsigned long int timelen, unsigned long int bytesrcv, unsigned long int bytessnt);
+int statistics_insert(unsigned char *desc, unsigned char *name_line, unsigned short int zone, unsigned short int net, unsigned short int node, unsigned short int point, unsigned char typ, unsigned int timebeg, unsigned int timelen, unsigned int bytesrcv, unsigned int bytessnt);
 int split_ftn_addr(unsigned char *addr, unsigned short int *zone, unsigned short int *net, unsigned short int *node, unsigned short int *point);
 int sort_order_prepare();
 int sort_aka();
@@ -67,11 +67,11 @@ int statistics_draw();
 int line_load_draw();
 void otstup();
 void to_long(unsigned char *x, int len);
-void perevod_num(char *adp, unsigned long int bytes_i);
-void perevod_time(char *adp, unsigned long int second);
+void perevod_num(char *adp, unsigned int bytes_i);
+void perevod_time(char *adp, unsigned int second);
 void find_name(unsigned char *fullname, unsigned char *desc, unsigned char *name_line);
 void line_load_group();
-unsigned long int get_sess_text_num(char *buff);
-unsigned long int get_sess_text_time(char *buff);
+unsigned int get_sess_text_num(char *buff);
+unsigned int get_sess_text_time(char *buff);
 
 #endif

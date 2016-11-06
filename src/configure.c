@@ -58,7 +58,7 @@ void month_get(char *param){
     for (ckl=len; ckl>0; ckl--){
 	if (num<1){
 	    printf("Неверно заданы месяцы в 'conf_text_month'...\n");
-	    exit();
+	    exit(1);
 	}
 	if (param[ckl]==*","){
 	    num--;

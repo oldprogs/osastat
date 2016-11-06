@@ -11,7 +11,7 @@ int process_bforce(char *desc, char *file){
     FILE *file_log;
     char buff[1024], ckl;
     unsigned short int      zone, net, node, point, len;
-    unsigned long int       timebeg, timelen, bytesrcv, bytessnt;
+    unsigned int       timebeg, timelen, bytesrcv, bytessnt;
     unsigned char typ, pn=0, pole[12][80], *pnt, force[4], name_line[80];
 					    
     if (!(file_log=fopen(file, "r"))){
@@ -72,7 +72,7 @@ int process_qico(char *desc, char *file, char type){
     FILE *file_log;
     char buff[1024], ckl;
     unsigned short int      zone, net, node, point, len;
-    unsigned long int       timebeg, timelen, bytesrcv, bytessnt;
+    unsigned int       timebeg, timelen, bytesrcv, bytessnt;
     unsigned char typ, pn=0, pole[7][80], *pnt, force[4], name_line[80];
 					    
     if (!(file_log=fopen(file, "r"))){
@@ -126,8 +126,8 @@ int process_ifcico(char *desc, char *file){
     regex_t f_conf_string_pattern[5];
     regmatch_t result[1024];
     unsigned short int	zone, net, node, point, len;
-    unsigned long int	timebeg, timelen, bytesrcv=0, bytessnt=0;
-    unsigned long long	curr_pos, curr_sess;
+    unsigned int	timebeg, timelen, bytesrcv=0, bytessnt=0;
+    unsigned long	curr_pos, curr_sess;
     unsigned char typ;//, pn=0, pole[7][80], *pnt, force[4], name_line[80];
 
     for (ckl=0; ckl<6; ckl++){
@@ -256,7 +256,7 @@ int process_binary(char *desc, char *file){
     FILE *file_log;
     struct{
 	unsigned short int      zone, net, node, point;
-	unsigned long int       timebeg, timelen, bytesrcv, bytessnt;
+	unsigned int       timebeg, timelen, bytesrcv, bytessnt;
 	unsigned char           filesrcv, filessnt;
 	unsigned short int      typ;
     }thist;
@@ -278,7 +278,7 @@ int process_binary(char *desc, char *file){
     fclose(file_log);
 }
 
-int statistics_filter(unsigned char *desc, unsigned char *name_line, unsigned short int zone, unsigned short int net, unsigned short int node, unsigned short int point, unsigned char typ, unsigned long int timebeg, unsigned long int timelen, unsigned long int bytesrcv, unsigned long int bytessnt){
+int statistics_filter(unsigned char *desc, unsigned char *name_line, unsigned short int zone, unsigned short int net, unsigned short int node, unsigned short int point, unsigned char typ, unsigned int timebeg, unsigned int timelen, unsigned int bytesrcv, unsigned int bytessnt){
     if ((timebeg>=time_start)&&(timebeg<=time_stop)){
 //	printf("%s/%s = %d:%d/%d.%d - %c - %d(%d/%d), %d: rx:%d/tx:%d\n", desc, name_line, zone, net, node, point, typ, timebeg, timebeg-time_start, timebeg-time_stop, timelen, bytesrcv, bytessnt);
 	statistics_insert(desc, name_line, zone, net, node, point, typ, timebeg, timelen, bytesrcv, bytessnt);
@@ -331,7 +331,7 @@ int load_find_position(unsigned char *desc, unsigned char *name_line){
     return -1;
 }
 
-int statistics_insert(unsigned char *desc, unsigned char *name_line, unsigned short int zone, unsigned short int net, unsigned short int node, unsigned short int point, unsigned char typ, unsigned long int timebeg, unsigned long int timelen, unsigned long int bytesrcv, unsigned long int bytessnt){
+int statistics_insert(unsigned char *desc, unsigned char *name_line, unsigned short int zone, unsigned short int net, unsigned short int node, unsigned short int point, unsigned char typ, unsigned int timebeg, unsigned int timelen, unsigned int bytesrcv, unsigned int bytessnt){
     int position, ll_position, t_start, t_stop, ckl;
     unsigned char buff[1024];
     position=statistics_find_position(zone, net, node, point);
@@ -725,7 +725,7 @@ void to_long(unsigned char *x, int len){
     }
 }
 
-void perevod_num(char *adp, unsigned long int bytes_i){
+void perevod_num(char *adp, unsigned int bytes_i){
     char x[128];
     double bytes = bytes_i;
     if (bytes>=1073741824){
@@ -774,9 +774,9 @@ void perevod_num(char *adp, unsigned long int bytes_i){
     strcpy(adp, x);
 }
 
-void perevod_time(char *adp, unsigned long int second){
+void perevod_time(char *adp, unsigned int second){
     char x[128], *y, ckl, ln;
-    unsigned long int h, m, s;
+    unsigned int h, m, s;
     h=second/60/60;
     m=(second-h*60*60)/60;
     s=(second-h*60*60-m*60);
@@ -840,7 +840,7 @@ void line_load_group(){
     free(tmp_line_load);
 }
 
-unsigned long int get_sess_text_num(char *buff){
+unsigned int get_sess_text_num(char *buff){
     int ckl, len, stat=0;
     char tmp[1024];
     strcpy(tmp, buff);
@@ -857,10 +857,10 @@ unsigned long int get_sess_text_num(char *buff){
     return 0;
 }
 
-unsigned long int get_sess_text_time(char *buff){
+unsigned int get_sess_text_time(char *buff){
     int ckl, len, stat=0;
     char tmp[1024], tmp_date[32];
-    unsigned long int x_sec=0, x_min=0, x_hour=0;
+    unsigned int x_sec=0, x_min=0, x_hour=0;
     strcpy(tmp, buff);
     sprintf(tmp_date, "%s %d", month[tm_mon], tm_mday);
     len=strlen(tmp_date);

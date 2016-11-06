@@ -21,7 +21,8 @@ int set_time(int days_back){
     date_now_s.tm_sec=0;
     date_now_s.tm_min=0;
     date_now_s.tm_hour=0;
-    date_now=timegm(&date_now_s)-offset_utc;
+//    date_now=timegm(&date_now_s)-offset_utc;
+    date_now=timegm(&date_now_s);
     
     time_start=date_now-days_back*day_sec;
     time_stop=date_now-days_back*day_sec+day_sec-1;
