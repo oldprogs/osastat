@@ -4,6 +4,8 @@
 extern unsigned long int time_start;
 extern unsigned long int time_stop;
 extern unsigned long int day_sec;
+extern int tm_mday;
+extern int tm_mon;
 
 extern struct configuration_lines_aliases{
     char alias[255];
@@ -39,6 +41,8 @@ struct line_load_struct{
     unsigned long int time_in, time_out;//, time_all=0;
 }*line_load;
 
+unsigned char	month[12][16];
+unsigned char	date_get[32];
 unsigned char	*tpl_start="†€‰€Š€‰€Š€‰€Š€‰€Š€‰€Š€‰€Š€‰€Š€‰€Š€‰€Š€‰€Š€‰€Š€‰€‡";
 unsigned char	*tpl_draw ="                                    ";
 unsigned char	*tpl_split="†€€€Š€€€Š€€€Š€€€Š€€€Š€€€Š€€€Š€€€Š€€€Š€€€Š€€€Š€€€‡";
@@ -48,6 +52,7 @@ unsigned char	otstup_num=15;
 
 int process_bforce(char *desc, char *file);
 int process_qico(char *desc, char *file);
+int process_ifcico(char *desc, char *file);
 int process_binary(char *desc, char *file);
 int statistics_filter(unsigned char *desc, unsigned char *name_line, unsigned short int zone, unsigned short int net, unsigned short int node, unsigned short int point, unsigned char typ, unsigned long int timebeg, unsigned long int timelen, unsigned long int bytesrcv, unsigned long int bytessnt);
 int statistics_find_position(unsigned short int zone, unsigned short int net, unsigned short int node, unsigned short int point);
@@ -65,5 +70,7 @@ void perevod_num(char *adp, unsigned long int bytes_i);
 void perevod_time(char *adp, unsigned long int second);
 void find_name(unsigned char *fullname, unsigned char *desc, unsigned char *name_line);
 void line_load_group();
+unsigned long int get_sess_text_num(char *buff);
+unsigned long int get_sess_text_time(char *buff);
 
 #endif

@@ -108,6 +108,131 @@ int process_qico(char *desc, char *file){
     fclose(file_log);
 }
 
+int process_ifcico(char *desc, char *file){
+    FILE *file_log;
+    char buff[1024], mnth[255], ckl, tmp_buff[1024], tmp_len;
+    char *string_pat[4]={	".*:.*:.*ifcico.*:.*start.*bound.*session",
+				".*:.*:.*ifcico.*:.*sent.*bytes in.*seconds",
+				".*:.*:.*ifcico.*:.*received.*bytes in.*seconds",
+				".*:.*:.*ifcico.*:.*call to.*successful" };
+    regex_t f_conf_string_pattern[4];
+    regmatch_t result[1024];
+    unsigned short int	zone, net, node, point, len;
+    unsigned long int	timebeg, timelen, bytesrcv=0, bytessnt=0;
+    unsigned long long	curr_pos, curr_sess;
+    unsigned char typ;//, pn=0, pole[7][80], *pnt, force[4], name_line[80];
+
+    if (regcomp(&f_conf_string_pattern[0], mnth, 0)){
+	printf("regexp error!\n");
+	return 2;
+    }
+    for (ckl=0; ckl<4; ckl++){
+	sprintf(mnth, "^%s %s", date_get, string_pat[ckl]);
+	if (regcomp(&f_conf_string_pattern[ckl], mnth, 0)){
+	    printf("regexp error!\n");
+	    return 2;
+	}
+    }
+					    
+    if (!(file_log=fopen(file, "r"))){
+	printf("error open log file: %s\n", file);
+	return 1;
+    }
+    while(!feof(file_log)){
+	bzero(buff, sizeof(buff));
+	fgets(buff, sizeof(buff), file_log);
+	if(!regexec(&f_conf_string_pattern[0], buff, 20, result, 0)){
+//	    printf("(%d)(%d)%s", get_sess_text_num(buff), get_sess_text_time(buff), buff);
+    	    if (strstr(buff," outbound ")){typ=*"O";}else{typ=*"I";}
+	    if (strstr(buff," inbound ")) {typ=*"I";}else{typ=*"O";}
+	    curr_sess=get_sess_text_num(buff);
+	    timebeg=get_sess_text_time(buff);
+	    curr_pos=ftell(file_log);
+	    while(!feof(file_log)){
+		bzero(buff, sizeof(buff));
+		fgets(buff, sizeof(buff), file_log);
+		if((!regexec(&f_conf_string_pattern[1], buff, 20, result, 0))&&(curr_sess==get_sess_text_num(buff))){
+		    strcpy(tmp_buff, buff);
+		    *strstr(tmp_buff, " bytes in ")=0;
+		    tmp_len=strlen(tmp_buff)-1;
+		    for (ckl=tmp_len; ckl>0; ckl--){
+			if (tmp_buff[ckl]==*" "){
+			    bytessnt+=atoi(&tmp_buff[ckl+1]);
+			    break;
+			}
+		    }
+//		    printf("(%d)%s", bytessnt, buff);
+		}
+		if((!regexec(&f_conf_string_pattern[2], buff, 20, result, 0))&&(curr_sess==get_sess_text_num(buff))){
+		    strcpy(tmp_buff, buff);
+		    *strstr(tmp_buff, " bytes in ")=0;
+		    tmp_len=strlen(tmp_buff)-1;
+		    for (ckl=tmp_len; ckl>0; ckl--){
+			if (tmp_buff[ckl]==*" "){
+			    bytesrcv+=atoi(&tmp_buff[ckl+1]);
+			    break;
+			}
+		    }
+//		    printf("(%d)%s", bytesrcv, buff);
+		}
+		if((!regexec(&f_conf_string_pattern[3], buff, 20, result, 0))&&(curr_sess==get_sess_text_num(buff))){
+		    timelen=get_sess_text_time(buff)-timebeg;
+		    strcpy(tmp_buff, buff);
+		    *strstr(tmp_buff, " successful ")=0;
+		    tmp_len=strlen(tmp_buff)-1;
+		    for (ckl=tmp_len; ckl>0; ckl--){
+			if (tmp_buff[ckl]==*" "){
+			    split_ftn_addr(&tmp_buff[ckl+1], &zone, &net, &node, &point);
+			    break;
+			}
+		    }
+//		    printf("%s/ifcico|%d:%d/%d.%d - %c - (beg:%d/len:%d) - rx:%d/tx:%d\n" , desc, zone, net, node, point, typ ,timebeg ,timelen , bytesrcv, bytessnt);
+		    if (net!=0){
+			statistics_filter(desc, "ifcico", zone, net, node, point, typ, timebeg, timelen, bytesrcv, bytessnt);
+		    }
+		    bytessnt=0;bytesrcv=0;
+		    break;
+		}
+	    }
+	    fseek(file_log, curr_pos, SEEK_SET);
+	}
+	
+/*	if(!regexec(&f_conf_string_pattern[1], buff, 20, result, 0)){
+	    printf("%s", buff);
+	}
+	if(!regexec(&f_conf_string_pattern[2], buff, 20, result, 0)){
+	    printf("%s", buff);
+	}
+	if(!regexec(&f_conf_string_pattern[3], buff, 20, result, 0)){
+	    printf("%s", buff);
+	}*/
+/*	pn=0;
+	len=strlen(buff);
+	for (ckl=len; ckl>=0; ckl--){
+	    if (buff[ckl]==*","){
+		strcpy(pole[pn], &buff[ckl+1]);
+		buff[ckl]=0;
+		pn++;
+	    }
+	}
+	strcpy(pole[pn], buff);
+	pn++;
+	if (split_ftn_addr(pole[2], &zone, &net, &node, &point)==-1) continue;
+
+	bytesrcv=atoi(pole[0]);
+	bytessnt=atoi(pole[1]);
+	timelen=atoi(pole[4]);
+	timebeg=atoi(pole[5]);
+	strcpy(name_line, pole[6]);
+	if (strstr(pole[3],"O")){typ=*"O";}else{typ=*"I";}
+	if (strstr(pole[3],"I")){typ=*"I";}else{typ=*"O";}
+
+	statistics_filter(desc, name_line, zone, net, node, point, typ, timebeg, timelen, bytesrcv, bytessnt);
+*/
+    }
+    fclose(file_log);
+}
+
 int process_binary(char *desc, char *file){
     FILE *file_log;
     struct{
@@ -176,13 +301,13 @@ int load_find_position(unsigned char *desc, unsigned char *name_line){
 //	    printf("-%d=%d-\n", stat_screen[ckl].point, point);
 //	    printf("%d Ok\n", ckl);
 	    return ckl;
-	}else{
+	}//else{
 //	    printf("\nNo\n");
 //	    printf("-%d=%d-\n", stat_screen[ckl].zone, zone);
 //	    printf("-%d=%d-\n", stat_screen[ckl].net, net);
 //	    printf("-%d=%d-\n", stat_screen[ckl].node, node);
 //	    printf("-%d=%d-\n", stat_screen[ckl].point, point);
-	}
+//	}
     }
     return -1;
 }
@@ -694,4 +819,38 @@ void line_load_group(){
 	}
     }
     free(tmp_line_load);
+}
+
+unsigned long int get_sess_text_num(char *buff){
+    int ckl, len, stat=0;
+    char tmp[1024];
+    strcpy(tmp, buff);
+    len=strlen(buff);
+    for (ckl=len;ckl>0;ckl--){
+	if (tmp[ckl]==*"]"){
+	    tmp[ckl]=0;
+	    stat=1;
+	}
+	if ((tmp[ckl]==*"[")&&(stat==1)){
+	    return atoi(&tmp[ckl+1]);
+	}
+    }
+    return 0;
+}
+
+unsigned long int get_sess_text_time(char *buff){
+    int ckl, len, stat=0;
+    char tmp[1024], tmp_date[32];
+    unsigned long int x_sec=0, x_min=0, x_hour=0;
+    strcpy(tmp, buff);
+    sprintf(tmp_date, "%s %d", month[tm_mon], tm_mday);
+    len=strlen(tmp_date);
+    tmp[len+9]=0;
+    x_sec=atoi(&tmp[len+7]);
+    tmp[len+6]=0;
+    x_min=atoi(&tmp[len+4]);
+    tmp[len+3]=0;
+    x_hour=atoi(&tmp[len+1]);
+    return time_start+x_sec+x_min*60+x_hour*60*60;
+
 }

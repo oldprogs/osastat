@@ -41,7 +41,11 @@ int main(int argc, char **argv)
 	if (!strcmp(configuration_key[ckl].conf_type,log_types[2])){
 	    process_qico(configuration_key[ckl].conf_name,configuration_key[ckl].conf_file);
 	}
+	if (!strcmp(configuration_key[ckl].conf_type,log_types[3])){
+	    process_ifcico(configuration_key[ckl].conf_name,configuration_key[ckl].conf_file);
+	}
     }
+//    exit(0);
     if (stat_screen_acc!=0){
 	intro();
 	print_time();

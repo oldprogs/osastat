@@ -16,6 +16,8 @@ int set_time(int days_back){
     time(&date_now);
     date_now_s=*localtime(&date_now);
     offset_utc=date_now_s.tm_gmtoff;
+//    tm_mday=date_now_s.tm_mday;
+//    tm_mon=date_now_s.tm_mon+1;
     date_now_s.tm_sec=0;
     date_now_s.tm_min=0;
     date_now_s.tm_hour=0;
@@ -23,6 +25,10 @@ int set_time(int days_back){
     
     time_start=date_now-days_back*day_sec;
     time_stop=date_now-days_back*day_sec+day_sec-1;
+
+    date_now_s=*localtime(&time_start);
+    tm_mday=date_now_s.tm_mday;
+    tm_mon=date_now_s.tm_mon;
 
 //    printf("%d: %s", time_start, ctime(&time_start));
 //    printf("%d: %s", time_stop, ctime(&time_stop));

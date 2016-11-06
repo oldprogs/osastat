@@ -44,8 +44,46 @@ int configure(char *file_config_name){
 	    aliases_num++;
 	}
 	if (strstr(buff, config_key[6])){group_aliases=atoi(param);}
+	if (strstr(buff, config_key[7])){month_get(param);}
+	if (strstr(buff, config_key[8])){date_get_conf(param);}
 	bzero(buff, sizeof(buff));
     }while(!feof(file_config));
     fclose(file_config);
     return 0;
+}
+
+void month_get(char *param){
+    char ckl, len=strlen(param), num=12;
+//    printf("%s\n", param);
+    for (ckl=len; ckl>0; ckl--){
+	if (num<1){
+	    printf("Неверно заданы месяцы в 'conf_text_month'...\n");
+	    exit();
+	}
+	if (param[ckl]==*","){
+	    num--;
+	    param[ckl]=0;
+	    strcpy(month[num], &param[ckl+1]);
+	}
+    }
+    strcpy(month[0], param);
+//    for (ckl=0; ckl<12; ckl++){
+//	printf("-%s(%d)-", month[ckl], ckl);
+//    }
+}
+
+void date_get_conf(char *param){
+    char ckl, len=strlen(param);
+    for (ckl=0; ckl<len; ckl++){
+	if (param[ckl]==*"d"){
+	    sprintf(date_get, "%s%d", date_get, tm_mday);
+	    continue;
+	}
+	if (param[ckl]==*"m"){
+	    sprintf(date_get, "%s%s", date_get, month[tm_mon]);
+	    continue;
+	}
+	sprintf(date_get, "%s%c", date_get, param[ckl]);
+    }
+//    printf("%s\n", date_get);
 }

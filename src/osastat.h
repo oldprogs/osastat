@@ -4,7 +4,7 @@
 #define NUM_Z	1000
 #define NUM_Y	100
 
-char log_types[3][255]={"bforce","binary","qico"};
+char log_types[4][255]={"bforce","binary","qico","ifcico"};
 
 extern struct configuration_struct{
     char conf_name[255];
